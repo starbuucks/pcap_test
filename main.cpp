@@ -49,11 +49,18 @@ int main(int argc, char* argv[]) {
 	    
 	    printf("src ip : %u.%u.%u.%u\n",
 		*(ip_packet + 12), *(ip_packet + 13), *(ip_packet + 14), *(ip_packet + 15));
-	    printf("src ip : %u.%u.%u.%u\n\n",
+	    printf("dst ip : %u.%u.%u.%u\n\n",
 		*(ip_packet + 16), *(ip_packet + 17), *(ip_packet + 18), *(ip_packet + 19));
 
 	    if(*(uint8_t*)(ip_packet + 9) == 0x06){
 		    printf("TCP packet detected\n");
+
+		    const u_char* tcp_packet = ip_packet + ip_len;	// start of tcp header
+		    int tcp_len = (int)(*(uint8_t*)(tcp_packet + 12) & 0xF0) >> 2;	// tcp header length
+
+		    printf("src port : %u\n", ntohs(*(uint16_t*)tcp_packet));
+		    printf("dst port : %u\n\n", ntohs(*(uint32_t*)(tcp_packet + 2)));
+
 	    }
     }
 
