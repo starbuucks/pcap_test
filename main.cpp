@@ -31,10 +31,6 @@ int main(int argc, char* argv[]) {
     printf("----------%u bytes captured----------\n", header->caplen);
     
     int i;
-    for(i = 0; i < header->caplen; i++){
-	    printf("%02x ", *(packet + i));
-    }
-    printf("\n\n");
 
     printf("src mac : %02x:%02x:%02x:%02x:%02x:%02x\n",
 	*(packet + 0), *(packet + 1), *(packet + 2), *(packet + 3), *(packet + 4), *(packet + 5));
@@ -42,7 +38,7 @@ int main(int argc, char* argv[]) {
 	*(packet + 6), *(packet + 7), *(packet + 8), *(packet + 9), *(packet + 10), *(packet + 11));
  
     if(ntohs(*(uint16_t*)(packet + 12)) == 0x0800){
-	    printf("IP packet detected\n");
+	    printf("[ IP packet detected ]\n");
 
 	    const u_char* ip_packet = packet + 14;	// start of ip header
 	    int ip_len = (int)(*(uint8_t*)ip_packet & 0x0F) << 2; // ip header length
@@ -53,13 +49,31 @@ int main(int argc, char* argv[]) {
 		*(ip_packet + 16), *(ip_packet + 17), *(ip_packet + 18), *(ip_packet + 19));
 
 	    if(*(uint8_t*)(ip_packet + 9) == 0x06){
-		    printf("TCP packet detected\n");
+		    printf("[ TCP packet detected ]\n");
 
 		    const u_char* tcp_packet = ip_packet + ip_len;	// start of tcp header
 		    int tcp_len = (int)(*(uint8_t*)(tcp_packet + 12) & 0xF0) >> 2;	// tcp header length
 
 		    printf("src port : %u\n", ntohs(*(uint16_t*)tcp_packet));
 		    printf("dst port : %u\n\n", ntohs(*(uint32_t*)(tcp_packet + 2)));
+
+		    const u_char* data = tcp_packet + tcp_len;
+
+		    int data_len = (packet + header->caplen - data < 32)
+			    ?(packet + header->caplen - data):32;	// choose min(data_size, 32);
+
+		    if(data_len == 0){
+			    printf("no data\n\n");
+		    }
+		    else{
+		    	printf("data (up to 32 bytes)");
+
+			    for(i = 0; i < data_len; i++){
+				    if(i % 16 == 0) printf("\n");
+				    printf("%02x ", *(data + i));
+			    }
+			    printf("\n\n");
+		    }
 
 	    }
     }
