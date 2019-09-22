@@ -41,8 +41,20 @@ int main(int argc, char* argv[]) {
     printf("dst mac : %02x:%02x:%02x:%02x:%02x:%02x\n\n",
 	*(packet + 6), *(packet + 7), *(packet + 8), *(packet + 9), *(packet + 10), *(packet + 11));
  
-    if(ntohs(*(uint16_t*)(packet+12)) == 0x0800){
+    if(ntohs(*(uint16_t*)(packet + 12)) == 0x0800){
 	    printf("IP packet detected\n");
+
+	    const u_char* ip_packet = packet + 14;	// start of ip header
+	    int ip_len = (int)(*(uint8_t*)ip_packet & 0x0F) << 2; // ip header length
+	    
+	    printf("src ip : %u.%u.%u.%u\n",
+		*(ip_packet + 12), *(ip_packet + 13), *(ip_packet + 14), *(ip_packet + 15));
+	    printf("src ip : %u.%u.%u.%u\n\n",
+		*(ip_packet + 16), *(ip_packet + 17), *(ip_packet + 18), *(ip_packet + 19));
+
+	    if(*(uint8_t*)(ip_packet + 9) == 0x06){
+		    printf("TCP packet detected\n");
+	    }
     }
 
     
